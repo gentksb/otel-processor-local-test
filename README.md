@@ -4,11 +4,24 @@
 
 このリポジトリは、OpenTelemetry Collector Processor を通じて トレースデータを追加・フィルタする設定をローカル環境で動作検証するためのリポジトリです
 
+本番環境や共有の検証環境では、OTel Collector から組織で利用しているオブザーバビリティバックエンドにテレメトリが送信されることが想定されます。しかし、Collector の設定変更を検証するにあたり、開発したコードを毎回検証環境にデプロイし、SaaS のバックエンドで閲覧するとフィードバックループの遅さやコストの心配に悩まされることとなります。
+
+そこで、開発者が自分の**ローカルマシン上で、アプリケーション用の設定値を変更することなく**OTel Collector の設定を検証するための環境が必要となります。
+
+### 動作イメージ
+
+- 本番・検証環境: App --localhost:4417--> OTel collector -> Observability Backend
+- 開発マシン: App --localhost:4417--> OTel collector --localhost:4319--> [otel-tui](https://github.com/ymtdzzz/otel-tui)
+
+オブザーバビリティバックエンドとして[otel-tui](https://github.com/ymtdzzz/otel-tui)を使います。デフォルト設定では、otel-tui と OTel Collector の待ち受けポートが重複してしまうため、このリポジトリでは重複を避けるための参考設定を提供しています。
+
+計装されたアプリケーション起動時に`OTEL_TRACES_EXPORTER=otlp,console`を渡すことで、起動したターミナル上にアプリケーションが生成したトレースデータが表示されます。Collector 経由で otel-tui に送信されたトレースは、Collector の filter や insert によってスパンが増減されるはずです。この二つのスパン間の差を確認して、Collector の設定をデバッグします。
+
 ### リポジトリ内に含まれる内容
 
 - Node.js アプリケーションの自動計装によるトレース生成
 - OpenTelemetry Collector によるトレースデータの受信・処理
-- otel-tui を使用したトレースデータの可視化
+- [otel-tui](https://github.com/ymtdzzz/otel-tui) を使用したトレースデータの可視化（OTel Collector のデフォルト設定と被らない起動コマンド）
 
 ## 前提条件
 
